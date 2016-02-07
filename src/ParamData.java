@@ -1,32 +1,34 @@
-//import com.esri.core.geometry.SpatialReference;
+import com.esri.core.geometry.SpatialReference;
+import com.esri.core.map.Graphic;
+
 
 public class ParamData implements
 java.io.Serializable {
 	private static final long serialVersionUID = 1L;
-	private String Stops;
-	private int ClientType;
+	private Graphic[] stops;
+	private int clientType;
 	private int timeTolerance;
-//	private SpatialReference sPf;
+	private SpatialReference sPf;
 	
 	public ParamData(){
 	}
 	
-	public ParamData(String Stops, int ClientType, int timeTolerance){//, SpatialReference sPf){
-		this.ClientType=ClientType;
+	public ParamData(Graphic[] stops, int clientType, int timeTolerance, SpatialReference sPf){
+		this.clientType=clientType;
 		this.timeTolerance=timeTolerance;
-		this.Stops=Stops;
-//		this.sPf=sPf;   
+		this.stops=stops;
+		this.sPf=sPf;   
 	}
 	public int getClientType(){
-		return ClientType;
+		return clientType;
 	}
-	public String getStops(){
-		return Stops;
+	public Graphic[] getStops(){
+		return stops;
 	}
 	public int gettimeTolerance(){
 		return timeTolerance;
 	}
-//	public SpatialReference getsPf(){
-//		return sPf;
-//	}
+	public SpatialReference getsPf(){
+		return sPf;
+	}
 }
