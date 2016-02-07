@@ -15,6 +15,7 @@ import com.esri.core.internal.tasks.ags.r;
 import com.esri.core.internal.tasks.ags.t;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleLineSymbol;
+import com.esri.core.tasks.na.NAFeaturesAsFeature;
 import com.esri.core.tasks.na.Route;
 import com.esri.core.tasks.na.RouteParameters;
 import com.esri.core.tasks.na.RouteResult;
@@ -28,14 +29,13 @@ public class Server extends Thread{
 
 	private ServerSocket socket;
 	private ObjectInputStream oin;
-	private ParamData data, driver;
-	private int driverTime;
+	private ParamData driver;
+	private double driverTime;
 	private RouteParameters parameters;
 	private RouteResult result;
 	private RouteTask task;
   
 	public Server(int port) throws IOException, Exception {
-		data = new ParamData();
 		task = RouteTask.createOnlineRouteTask("http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
 		driverTime = 0;
 		socket = new ServerSocket(port);
@@ -62,17 +62,20 @@ public class Server extends Thread{
 				Socket client = socket.accept();
 				System.out.println("Client " + client.getRemoteSocketAddress() + " connected!");
 				oin = new ObjectInputStream(client.getInputStream());
-				data = (ParamData)oin.readObject();
+				ParamData data = (ParamData)oin.readObject();
 				if(data.getClientType() == 0) { //Driver
-					parameters = buildDriverParams();
+					System.out.println("Driver data received!!!");
+					parameters = buildDriverParams(data);
+					driver = data;
 				} else { //Rider
-					parameters = buildRiderParams();
+					System.out.println("Rider data received!!!");
+					parameters = buildParams(data);
 				}
 				//Do routing
 				result = task.solve(parameters);
 				//Compare time and print result
 				if(data.getClientType() == 1) {
-					int totalTime = getTotalTime(result);
+					double totalTime = getTotalTime(result);
 					printResult(totalTime);
 				} else {
 					driverTime = getTotalTime(result);
@@ -93,29 +96,32 @@ public class Server extends Thread{
 		}
 	}
 	
-	private RouteParameters buildDriverParams() {
-		System.out.println("Driver data received!!!");
-		System.out.println(data.getClientType());
-		System.out.println(data.getStops());
-		System.out.println(data.gettimeTolerance());
-		return null;
+	private RouteParameters buildDriverParams(ParamData data) throws Exception {
+		driverTime = data.gettimeTolerance();
+		return buildParams(data);
 	}
 	
-	private RouteParameters buildRiderParams() {
-		System.out.println("Rider data received!!!");
-		System.out.println(data.getClientType());
-		System.out.println(data.getStops());
-		System.out.println(data.gettimeTolerance());
-		return null;
+	private RouteParameters buildParams(ParamData data) throws Exception {
+		RouteTask task = RouteTask.createOnlineRouteTask(
+		          "http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
+	    parameters = task.retrieveDefaultRouteTaskParameters();
+	    parameters.setOutSpatialReference(data.getsPf());
+	    NAFeaturesAsFeature stops = new NAFeaturesAsFeature();
+	    for(Graphic stop : data.getStops()) {
+	    	stops.addFeature(stop);
+	    }
+	    parameters.setStops(stops);
+	    parameters.setFindBestSequence(false);
+		return parameters;
 	}
 	
-	private int getTotalTime(RouteResult result) {
+	private double getTotalTime(RouteResult result) {
 		String str = result.toString().split("Minutes=")[1];
 		System.out.println(str);
-		return 0;
+		return Double.valueOf(str.split("]")[0]);
 	}
 	
-	private void printResult(int totalTime) {
+	private void printResult(double totalTime) {
 		System.out.println("************************************************************");
 		if(totalTime - driverTime < driver.gettimeTolerance())
 			System.out.println("\tThe driver can share ride!");
