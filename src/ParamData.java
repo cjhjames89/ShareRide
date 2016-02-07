@@ -15,12 +15,13 @@ java.io.Serializable {
 	public ParamData(){
 	}
 	
-	public ParamData(Graphic[] stops, int clientType, int timeTolerance, SpatialReference sPf,String date){
+	public ParamData(Graphic[] stops, int clientType, int timeTolerance, SpatialReference sPf, String date){
 		this.clientType=clientType;
 		this.timeTolerance=timeTolerance;
 		this.stops=stops;
 		this.sPf=sPf;
 		this.date=date;
+		this.drivingTime = -1;
 	}
 	public int getClientType(){
 		return clientType;
@@ -28,13 +29,13 @@ java.io.Serializable {
 	public Graphic[] getStops(){
 		return stops;
 	}
-	public int gettimeTolerance(){
+	public int getTimeTolerance(){
 		return timeTolerance;
 	}
 	public SpatialReference getsPf(){
 		return sPf;
 	}
-	public String getsdate(){
+	public String getDate(){
 		return date;
 	}
 	public void setDrivingTime(double dtime){

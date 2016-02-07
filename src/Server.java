@@ -1,4 +1,5 @@
 import java.awt.EventQueue;
+
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -9,7 +10,10 @@ import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import com.esri.runtime.ArcGISRuntime;
 import com.esri.core.internal.tasks.ags.r;
 import com.esri.core.internal.tasks.ags.t;
@@ -29,15 +33,15 @@ public class Server extends Thread{
 
 	private ServerSocket socket;
 	private ObjectInputStream oin;
-	private ParamData driver;
-	private double driverTime;
-	private RouteParameters parameters;
-	private RouteResult result;
+	private List<ParamData> result;
 	private RouteTask task;
+	private Map<String, List<ParamData>> driverPool;
+	private Map<String, List<ParamData>> riderPool;
   
 	public Server(int port) throws IOException, Exception {
 		task = RouteTask.createOnlineRouteTask("http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
-		driverTime = 0;
+		driverPool = new HashMap<String, List<ParamData>>();
+		riderPool = new HashMap<String, List<ParamData>>();
 		socket = new ServerSocket(port);
 	    socket.setSoTimeout(50000);
 	}
@@ -58,29 +62,28 @@ public class Server extends Thread{
 	public void run() {
 		while(true) {
 			try {
+				System.out.println("-----------------------------------------------------------------------------------");
 				System.out.println("Waiting for client...");
 				Socket client = socket.accept();
 				System.out.println("Client " + client.getRemoteSocketAddress() + " connected!");
 				oin = new ObjectInputStream(client.getInputStream());
 				ParamData data = (ParamData)oin.readObject();
-				if(data.getClientType() == 0) { //Driver
-					System.out.println("Driver data received!!!");
-					parameters = buildDriverParams(data);
-					driver = data;
-				} else { //Rider
-					System.out.println("Rider data received!!!");
-					parameters = buildParams(data);
-				}
-				//Do routing
-				result = task.solve(parameters);
-				//Compare time and print result
-				if(data.getClientType() == 1) {
-					double totalTime = getTotalTime(result);
-					printResult(totalTime);
-				} else {
-					driverTime = getTotalTime(result);
-					System.out.println("Driver's driving time = " + driverTime);
-				}
+				int type = data.getClientType();
+				if(data.getClientType() == 0) //Driver
+					System.out.println("Driver data received!");
+				else //Rider
+					System.out.println("Rider data received!");
+				
+				System.out.println("************************************************************");
+				result = searchMatch(type, data);
+				if(result.size() == 0) {
+					addToPool(type, data);
+					System.out.println("\tNo match yet! But you'll be notified when there's a match.");
+				} else if(data.getClientType() == 0) 
+					System.out.println("\tThank you! A rider can ride your car!");
+				else 
+					System.out.println("\tGreat! A driver is able to share ride with you!");
+
 				client.close();
 			} catch(SocketTimeoutException s) {
 				System.out.println("Server timed out!");
@@ -96,38 +99,80 @@ public class Server extends Thread{
 		}
 	}
 	
-	private RouteParameters buildDriverParams(ParamData data) throws Exception {
-		driverTime = data.gettimeTolerance();
-		return buildParams(data);
+	private void addToPool(int type, ParamData data) {
+		Map<String, List<ParamData>> pool = type == 0 ? driverPool : riderPool;
+		String time = data.getDate();
+		if(!pool.containsKey(time)) {
+			List<ParamData> list = new ArrayList<ParamData>();
+			list.add(data);
+			pool.put(time, list);
+		} else
+			pool.get(time).add(data);
 	}
 	
-	private RouteParameters buildParams(ParamData data) throws Exception {
-		RouteTask task = RouteTask.createOnlineRouteTask(
-		          "http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
-	    parameters = task.retrieveDefaultRouteTaskParameters();
+	public List<ParamData> searchMatch(int type, ParamData data) throws Exception {
+		RouteResult result;
+		RouteParameters parameters;
+		ParamData driver;
+		List<ParamData> otherPool = type == 0 ? riderPool.get(data.getDate()) : driverPool.get(data.getDate());
+		List<ParamData> candidates = new ArrayList<ParamData>();
+		if(type == 0) {
+			parameters = buildSingleParams(data);
+			result = task.solve(parameters);
+			data.setDrivingTime(getDrivingTime(result));
+		}
+		for(ParamData p : otherPool) {
+			if(type == 0) {
+				parameters = buildMergedParams(data, p);
+				driver = data;
+			} else {
+				parameters = buildMergedParams(p, data);
+				driver = p;
+			}
+			result = task.solve(parameters);
+			if(isSatisfiable(getDrivingTime(result), driver)) {
+				candidates.add(p);
+			}
+		}
+		return candidates;
+	}
+	
+	private RouteParameters buildSingleParams(ParamData data) throws Exception {
+		RouteParameters parameters = task.retrieveDefaultRouteTaskParameters();
 	    parameters.setOutSpatialReference(data.getsPf());
 	    NAFeaturesAsFeature stops = new NAFeaturesAsFeature();
 	    for(Graphic stop : data.getStops()) {
 	    	stops.addFeature(stop);
-	    	System.out.println(stop);
 	    }
+	    stops.setSpatialReference(data.getsPf());
 	    parameters.setStops(stops);
 	    parameters.setFindBestSequence(false);
 		return parameters;
 	}
 	
-	private double getTotalTime(RouteResult result) {
+	private RouteParameters buildMergedParams(ParamData driver, ParamData rider) throws Exception {
+		RouteParameters parameters = task.retrieveDefaultRouteTaskParameters();
+	    parameters.setOutSpatialReference(driver.getsPf());
+	    NAFeaturesAsFeature stops = new NAFeaturesAsFeature();
+	    stops.addFeature(driver.getStops()[0]);
+	    for(Graphic stop : rider.getStops()) {
+	    	stops.addFeature(stop);
+	    }
+	    stops.addFeature(driver.getStops()[1]);
+	    stops.setSpatialReference(driver.getsPf());
+	    parameters.setStops(stops);
+	    parameters.setFindBestSequence(false);
+		return parameters;
+	}
+	
+	private double getDrivingTime(RouteResult result){
 		String str = result.toString().split("Minutes=")[1];
 		System.out.println(str);
 		return Double.valueOf(str.split("]")[0]);
 	}
 	
-	private void printResult(double totalTime) {
-		System.out.println("************************************************************");
-		if(totalTime - driverTime < driver.gettimeTolerance())
-			System.out.println("\tThe driver can share ride!");
-		else
-			System.out.println();
-		System.out.println("************************************************************");
+	private boolean isSatisfiable(double totalDrivingTime, ParamData driver) {
+		return totalDrivingTime - driver.getDrivingTime() < driver.getTimeTolerance();
 	}
+	
 }
