@@ -10,8 +10,6 @@ notice and use restrictions.
 See the use restrictions.*/
 
 
-//import java.sql.ParameterMetaData;
-//import java.sql.Time;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -22,7 +20,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
-//import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -39,17 +36,12 @@ import com.esri.toolkit.overlays.DrawingOverlay;
 import com.esri.toolkit.overlays.DrawingOverlay.DrawingMode;
 import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.SpatialReference;
-//import com.esri.core.internal.io.handler.n;
 import com.esri.core.map.Graphic;
-//import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.esri.core.symbol.TextSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol.Style;
 import com.esri.core.tasks.na.NAFeaturesAsFeature;
-//import com.esri.core.tasks.na.Route;
-//import com.esri.core.tasks.na.RouteParameters;
 import com.esri.core.tasks.na.RouteTask;
-//import com.esri.core.tasks.na.RouteResult;
 import com.esri.map.ArcGISTiledMapServiceLayer;
 import com.esri.map.GraphicsLayer;
 import com.esri.map.JMap;
@@ -72,7 +64,6 @@ public class Client {
   private JMap map;
   private JComponent contentPane;
   private NAFeaturesAsFeature stops = new NAFeaturesAsFeature();
-  private NAFeaturesAsFeature barriers = new NAFeaturesAsFeature();
   private GraphicsLayer graphicsLayer;
   private DrawingOverlay myDrawingOverlay;
   private int numStops = 0;
@@ -147,7 +138,7 @@ public class Client {
 	            numStops++;
 	            if(count >=2) 
 	        	  stopButton.setEnabled(false);         
-	          //numStops++;
+	          
 	        	else{
 	        		stops.addFeature(graphic); //graphic is a stop
 	        		graphArray[count] = graphic;
@@ -195,7 +186,7 @@ public class Client {
 		        "The Choice of a Month", JOptionPane.QUESTION_MESSAGE, null, 
 		        input1, // Array of choices
 		        input1[0]); // Initial choice
-		    //System.out.println(timeMonth);
+		    
 	  timeString = timeString + timeMonth + ",";
 	  System.out.println(timeString);
 	//dropdown list for date
@@ -206,7 +197,6 @@ public class Client {
 		        "The Choice of a Date", JOptionPane.QUESTION_MESSAGE, null, 
 		        input2, // Array of choices
 		        input2[0]); // Initial choice
-		    //System.out.println(timeDate);
 	  timeString = timeString + timeDate + ",";
 	  System.out.println(timeString);
 	//dropdown list for hour
@@ -216,7 +206,6 @@ public class Client {
 		        "The Choice of a Hour", JOptionPane.QUESTION_MESSAGE, null, 
 		        input3, // Array of choices
 		        input3[0]); // Initial choice
-		    //System.out.println(timeDate);
 	  timeString = timeString + timeHour + ",";
 	  System.out.println(timeString);
 	//dropdown list for minutes
@@ -226,9 +215,7 @@ public class Client {
 		        "The Choice of a minute", JOptionPane.QUESTION_MESSAGE, null, 
 		        input4, // Array of choices
 		        input4[0]); // Initial choice
-		    //System.out.println(timeDate);
 	  timeString = timeString + timeMinute;
-	  //setoutTime = timeString;
 	  
 	  System.out.println(timeString);
 	  return timeString;
@@ -238,8 +225,6 @@ public class Client {
   
   public static void main(String[] args) {
 	  /* Hannah*/
-//	  JOptionPane.showMessageDialog(frame,
-//			    "Eggs are not supposed to be green.");
 	  
 	  Object[] options = {"Driver",
               "Rider"};
@@ -258,7 +243,6 @@ public class Client {
 	  } else {
 		waitTime = 0;
 	}
-	  //String timepass = SetTime();
   
 	  //send parameter
 	  //n is the client type
@@ -306,21 +290,6 @@ public class Client {
     });
     toolBar.add(stopButton);
 
-    // barrier
-    JButton barrierButton = new JButton(" Add a barrier ");
-    barrierButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        HashMap<String, Object> attributes = new HashMap<>();
-        attributes.put("type", "Barrier");
-        drawingOverlay.setUp(
-            DrawingMode.POINT,
-            new SimpleMarkerSymbol(Color.BLACK, 16, Style.X),
-            attributes);
-      }
-    });
-    toolBar.add(barrierButton);
-
     // solve
     JButton routeButton = new JButton(" Send route ");
     routeButton.addActionListener(new ActionListener() {
@@ -338,7 +307,6 @@ public class Client {
       public void actionPerformed(ActionEvent e) {
         graphicsLayer.removeAll();
         stops.clearFeatures();
-        barriers.clearFeatures();
         count = 0;
         numStops = 0;
         stopButton.setEnabled(true);
