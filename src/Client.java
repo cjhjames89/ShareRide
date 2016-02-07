@@ -37,7 +37,6 @@ import com.esri.toolkit.overlays.DrawingCompleteEvent;
 import com.esri.toolkit.overlays.DrawingCompleteListener;
 import com.esri.toolkit.overlays.DrawingOverlay;
 import com.esri.toolkit.overlays.DrawingOverlay.DrawingMode;
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.SpatialReference;
 //import com.esri.core.internal.io.handler.n;
@@ -213,7 +212,7 @@ public class Client {
 	  String[] input2 = { "1", "2", "3", "4", "5", "6","7", "8", "9", "10", "11", "12",
 			  "13", "14", "15", "16", "17", "18","19", "20", "21", "22", "23", "24", "25",
 			  "26", "27", "28", "29", "30", "31"};
-	  String timeDate = (String) JOptionPane.showInputDialog(null, "Choose a month now",
+	  String timeDate = (String) JOptionPane.showInputDialog(null, "Choose a date now",
 		        "The Choice of a Date", JOptionPane.QUESTION_MESSAGE, null, 
 		        input2, // Array of choices
 		        input2[0]); // Initial choice
@@ -223,7 +222,7 @@ public class Client {
 	//dropdown list for hour
 	  String[] input3 = { "1am", "2am", "3am", "4am", "5am", "6am","7am", "8am", "9am", "10am", "11am", "12pm",
 			  "1pm", "2pm", "3pm", "4pm", "5pm", "6pm","7pm", "8pm", "9pm", "10pm", "11pm", "12am"};
-	  String timeHour = (String) JOptionPane.showInputDialog(null, "Choose a month now",
+	  String timeHour = (String) JOptionPane.showInputDialog(null, "Choose a hour now",
 		        "The Choice of a Hour", JOptionPane.QUESTION_MESSAGE, null, 
 		        input3, // Array of choices
 		        input3[0]); // Initial choice
