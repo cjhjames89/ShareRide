@@ -1,30 +1,32 @@
-import com.esri.core.geometry.SpatialReference;
+//import com.esri.core.geometry.SpatialReference;
 
-public class ParamData {
-	private String stops;
-	private String clientType;
-	private int time_Tolerance;
-	private SpatialReference sPf;
+public class ParamData implements
+java.io.Serializable {
+	private static final long serialVersionUID = 1L;
+	private String Stops;
+	private int ClientType;
+	private int timeTolerance;
+//	private SpatialReference sPf;
 	
 	public ParamData(){
 	}
 	
-	public ParamData(String stops, String clientType, int time_Tolerance, SpatialReference sPf){
-		this.clientType=clientType;
-		this.time_Tolerance=time_Tolerance;
-		this.stops=stops;
-		this.sPf=sPf;   
+	public ParamData(String Stops, int ClientType, int timeTolerance){//, SpatialReference sPf){
+		this.ClientType=ClientType;
+		this.timeTolerance=timeTolerance;
+		this.Stops=Stops;
+//		this.sPf=sPf;   
 	}
-	public String getclientType(){
-		return clientType;
+	public int getClientType(){
+		return ClientType;
 	}
-	public String getstops(){
-		return stops;
+	public String getStops(){
+		return Stops;
 	}
-	public int gettime_Tolerance(){
-		return time_Tolerance;
+	public int gettimeTolerance(){
+		return timeTolerance;
 	}
-	public SpatialReference getsPf(){
-		return sPf;
-	}
+//	public SpatialReference getsPf(){
+//		return sPf;
+//	}
 }
