@@ -113,16 +113,6 @@ public class Client {
     }
   }
 
-//  private void showResult(RouteResult result) {
-//    if (result != null) {
-//      // display the top route on the map as a graphic
-//      Route topRoute = result.getRoutes().get(0);
-//      Graphic routeGraphic = new Graphic(topRoute.getRouteGraphic().getGeometry(),
-//          new SimpleLineSymbol(Color.BLUE, 2.0f));
-//      graphicsLayer.addGraphic(routeGraphic);
-//      System.out.println(result.toString());
-//    }
-//  }
 
   /**
    * Creates the map, sets the initial extent.
