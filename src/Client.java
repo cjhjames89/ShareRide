@@ -9,7 +9,9 @@ notice and use restrictions.
 
 See the use restrictions.*/
 
+
 import java.sql.ParameterMetaData;
+import java.sql.Time;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -20,6 +22,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -36,6 +39,7 @@ import com.esri.toolkit.overlays.DrawingOverlay;
 import com.esri.toolkit.overlays.DrawingOverlay.DrawingMode;
 import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.SpatialReference;
+import com.esri.core.internal.io.handler.n;
 import com.esri.core.map.Graphic;
 import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
@@ -75,6 +79,9 @@ public class Client {
   private int count = 0;
   private Graphic[] graphArray =  new Graphic[2];
   private SpatialReference sparticalReferencePass;
+  private int n;
+  private int time;
+  
 
 
   
@@ -84,37 +91,21 @@ public class Client {
   // ------------------------------------------------------------------------
   // Constructor
   // ------------------------------------------------------------------------
-  public Client() {
+  public Client(int option, int waitTime) {
+	n = option;
+	time = waitTime;
   }
 
   // ------------------------------------------------------------------------
   // Core functionality
   // ------------------------------------------------------------------------
 
-  private void doRouting() {
-
-    RouteResult result = null;
-    RouteParameters parameters = null;
-
+  private void sendServer() {
     try {
-      RouteTask task = RouteTask.createOnlineRouteTask(
-          "http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
-      parameters = task.retrieveDefaultRouteTaskParameters();
       sparticalReferencePass = map.getSpatialReference();
       ParamData params = new ParamData(graphArray, n, time, sparticalReferencePass);
-      parameters.setOutSpatialReference(sparticalReferencePass);
-      //!!!!!!!!!!!!!
-      
-      stops.setSpatialReference(map.getSpatialReference());
-      parameters.setStops(stops);
-      parameters.setFindBestSequence(Boolean.valueOf(!preserveOrder)); // opposite of 'preserve order of stops'
-      if (barriers.getFeatures().size() > 0) {
-        barriers.setSpatialReference(map.getSpatialReference());
-        parameters.setPointBarriers(barriers);
-      }
-      //
-      //result = task.solve(parameters);
-      //showResult(result);
+      InfoSend sendObj = new InfoSend();
+      sendObj.sendParams("127.0.0.1", 1234, params);
     } catch (Exception e) {
       e.printStackTrace();
       JOptionPane.showMessageDialog(contentPane,
@@ -171,8 +162,7 @@ public class Client {
 	        	else{
 	        		stops.addFeature(graphic); //graphic is a stop
 	        		graphArray[count] = graphic;
-	          
-	          
+	          	          
 	        		graphicsLayer.addGraphic(new Graphic(graphic.getGeometry(), new TextSymbol(12, String
 	              .valueOf(numStops), Color.WHITE)));}
 	        } else if (graphic.getAttributeValue("type").equals("Barrier")) {
@@ -215,26 +205,25 @@ public class Client {
 	  
 	  Object[] options = {"Driver",
               "Rider"};
-	  int n = JOptionPane.showOptionDialog(null,
+	  final int waitTime;
+	  final int option = JOptionPane.showOptionDialog(null,
 			  "Are you a driver or a rider?",
 			  "Who are you?",
 			  JOptionPane.YES_NO_OPTION,
 			  JOptionPane.QUESTION_MESSAGE,
 			  null,
 			  options, null);
-	  int time = 0;
-	  if(n==0){
+	  if(option==0){
 	  String userIn = JOptionPane.showInputDialog(null, "Tolerence time in minutes");
-	  time = Integer.parseInt(userIn);
+	  waitTime = Integer.parseInt(userIn);
 	  System.out.printf("The user's name is '%s'.\n", userIn);
-	  }
+	  } else {
+		waitTime = 0;
+	}
 	  
 	  //send parameter
 	  //n is the client type
-	  
-	  
-
-	  
+  
 	  /* Hannah*/
 	  
     SwingUtilities.invokeLater(new Runnable() {
@@ -242,7 +231,7 @@ public class Client {
       public void run() {
         try {
           // instance of this application
-          Client routingApp = new Client();
+          Client routingApp = new Client(option,waitTime);
 
           // create the UI, including the map, for the application.
           JFrame appWindow = routingApp.createWindow();
@@ -298,7 +287,7 @@ public class Client {
     routeButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        doRouting();
+        sendServer();
       }
     });
     toolBar.add(routeButton);
@@ -312,6 +301,7 @@ public class Client {
         stops.clearFeatures();
         barriers.clearFeatures();
         count = 0;
+        numStops = 0;
         stopButton.setEnabled(true);
       }
     });
