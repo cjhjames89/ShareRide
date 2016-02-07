@@ -14,7 +14,7 @@ public class InfoSend {
 
     }
 
-    public void sendParams(String ip,int port,ParamData sentData) {
+    public void sendParams(String ip,int port,ParamData sentData,String date) {
 
         while (!isConnected) {
             try {

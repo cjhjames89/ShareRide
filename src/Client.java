@@ -105,7 +105,7 @@ public class Client {
       sparticalReferencePass = map.getSpatialReference();
       ParamData params = new ParamData(graphArray, n, time, sparticalReferencePass);
       InfoSend sendObj = new InfoSend();
-      sendObj.sendParams("127.0.0.1", 1234, params);
+      sendObj.sendParams("172.20.10.4", 1543, params);
     } catch (Exception e) {
       e.printStackTrace();
       JOptionPane.showMessageDialog(contentPane,

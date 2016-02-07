@@ -8,16 +8,19 @@ java.io.Serializable {
 	private Graphic[] stops;
 	private int clientType;
 	private int timeTolerance;
+	private String date;
 	private SpatialReference sPf;
+	private double drivingTime;
 	
 	public ParamData(){
 	}
 	
-	public ParamData(Graphic[] stops, int clientType, int timeTolerance, SpatialReference sPf){
+	public ParamData(Graphic[] stops, int clientType, int timeTolerance, SpatialReference sPf,String date){
 		this.clientType=clientType;
 		this.timeTolerance=timeTolerance;
 		this.stops=stops;
-		this.sPf=sPf;   
+		this.sPf=sPf;
+		this.date=date;
 	}
 	public int getClientType(){
 		return clientType;
@@ -30,5 +33,14 @@ java.io.Serializable {
 	}
 	public SpatialReference getsPf(){
 		return sPf;
+	}
+	public String getsdate(){
+		return date;
+	}
+	public void setDrivingTime(double dtime){
+		this.drivingTime=dtime;
+	}
+	public double  getDrivingTime(){
+		return drivingTime;
 	}
 }
