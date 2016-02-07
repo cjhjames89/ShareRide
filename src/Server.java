@@ -74,7 +74,7 @@ public class Server extends Thread{
 				else //Rider
 					System.out.println("Rider data received!");
 				
-				System.out.println("************************************************************");
+				System.out.println("****************************************************************************");
 				result = searchMatch(type, data);
 				if(result.size() == 0) {
 					addToPool(type, data);
@@ -83,7 +83,7 @@ public class Server extends Thread{
 					System.out.println("\tThank you! A rider can ride your car!");
 				else 
 					System.out.println("\tGreat! A driver is able to share ride with you!");
-
+				System.out.println("****************************************************************************");
 				client.close();
 			} catch(SocketTimeoutException s) {
 				System.out.println("Server timed out!");
@@ -114,13 +114,15 @@ public class Server extends Thread{
 		RouteResult result;
 		RouteParameters parameters;
 		ParamData driver;
-		List<ParamData> otherPool = type == 0 ? riderPool.get(data.getDate()) : driverPool.get(data.getDate());
-		List<ParamData> candidates = new ArrayList<ParamData>();
 		if(type == 0) {
 			parameters = buildSingleParams(data);
 			result = task.solve(parameters);
 			data.setDrivingTime(getDrivingTime(result));
 		}
+		List<ParamData> otherPool = type == 0 ? riderPool.get(data.getDate()) : driverPool.get(data.getDate());
+		List<ParamData> candidates = new ArrayList<ParamData>();
+		if(otherPool == null)
+			return candidates;
 		for(ParamData p : otherPool) {
 			if(type == 0) {
 				parameters = buildMergedParams(data, p);
@@ -167,7 +169,6 @@ public class Server extends Thread{
 	
 	private double getDrivingTime(RouteResult result){
 		String str = result.toString().split("Minutes=")[1];
-		System.out.println(str);
 		return Double.valueOf(str.split("]")[0]);
 	}
 	
