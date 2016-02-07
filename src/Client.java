@@ -10,8 +10,8 @@ notice and use restrictions.
 See the use restrictions.*/
 
 
-import java.sql.ParameterMetaData;
-import java.sql.Time;
+//import java.sql.ParameterMetaData;
+//import java.sql.Time;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -22,7 +22,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
+//import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -37,19 +37,20 @@ import com.esri.toolkit.overlays.DrawingCompleteEvent;
 import com.esri.toolkit.overlays.DrawingCompleteListener;
 import com.esri.toolkit.overlays.DrawingOverlay;
 import com.esri.toolkit.overlays.DrawingOverlay.DrawingMode;
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.SpatialReference;
-import com.esri.core.internal.io.handler.n;
+//import com.esri.core.internal.io.handler.n;
 import com.esri.core.map.Graphic;
-import com.esri.core.symbol.SimpleLineSymbol;
+//import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.esri.core.symbol.TextSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol.Style;
 import com.esri.core.tasks.na.NAFeaturesAsFeature;
-import com.esri.core.tasks.na.Route;
-import com.esri.core.tasks.na.RouteParameters;
+//import com.esri.core.tasks.na.Route;
+//import com.esri.core.tasks.na.RouteParameters;
 import com.esri.core.tasks.na.RouteTask;
-import com.esri.core.tasks.na.RouteResult;
+//import com.esri.core.tasks.na.RouteResult;
 import com.esri.map.ArcGISTiledMapServiceLayer;
 import com.esri.map.GraphicsLayer;
 import com.esri.map.JMap;
@@ -81,8 +82,7 @@ public class Client {
   private SpatialReference sparticalReferencePass;
   private int n;
   private int time;
-  
-
+  private String setoutTime;
 
   
   private boolean preserveOrder = false;
@@ -91,9 +91,10 @@ public class Client {
   // ------------------------------------------------------------------------
   // Constructor
   // ------------------------------------------------------------------------
-  public Client(int option, int waitTime) {
+  public Client(int option, int waitTime, String passtime) {
 	n = option;
 	time = waitTime;
+	setoutTime = passtime;
   }
 
   // ------------------------------------------------------------------------
@@ -103,7 +104,7 @@ public class Client {
   private void sendServer() {
     try {
       sparticalReferencePass = map.getSpatialReference();
-      ParamData params = new ParamData(graphArray, n, time, sparticalReferencePass);
+      ParamData params = new ParamData(graphArray, n, time, sparticalReferencePass,setoutTime);
       InfoSend sendObj = new InfoSend();
       sendObj.sendParams("172.20.10.4", 1543, params);
     } catch (Exception e) {
@@ -196,6 +197,56 @@ public class Client {
    * Starting point of this application.
    * @param args arguments to this application.
    */
+  
+  public static String SetTime(){
+		//dropdown list for month
+	  String timeString = ""; //has every time information
+	  String[] input1 = { "1", "2", "3", "4", "5", "6","7", "8", "9", "10", "11", "12" };
+	  String timeMonth = (String) JOptionPane.showInputDialog(null, "Choose a month now",
+		        "The Choice of a Month", JOptionPane.QUESTION_MESSAGE, null, 
+		        input1, // Array of choices
+		        input1[0]); // Initial choice
+		    //System.out.println(timeMonth);
+	  timeString = timeString + timeMonth + ",";
+	  System.out.println(timeString);
+	//dropdown list for date
+	  String[] input2 = { "1", "2", "3", "4", "5", "6","7", "8", "9", "10", "11", "12",
+			  "13", "14", "15", "16", "17", "18","19", "20", "21", "22", "23", "24", "25",
+			  "26", "27", "28", "29", "30", "31"};
+	  String timeDate = (String) JOptionPane.showInputDialog(null, "Choose a month now",
+		        "The Choice of a Date", JOptionPane.QUESTION_MESSAGE, null, 
+		        input2, // Array of choices
+		        input2[0]); // Initial choice
+		    //System.out.println(timeDate);
+	  timeString = timeString + timeDate + ",";
+	  System.out.println(timeString);
+	//dropdown list for hour
+	  String[] input3 = { "1am", "2am", "3am", "4am", "5am", "6am","7am", "8am", "9am", "10am", "11am", "12pm",
+			  "1pm", "2pm", "3pm", "4pm", "5pm", "6pm","7pm", "8pm", "9pm", "10pm", "11pm", "12am"};
+	  String timeHour = (String) JOptionPane.showInputDialog(null, "Choose a month now",
+		        "The Choice of a Hour", JOptionPane.QUESTION_MESSAGE, null, 
+		        input3, // Array of choices
+		        input3[0]); // Initial choice
+		    //System.out.println(timeDate);
+	  timeString = timeString + timeHour + ",";
+	  System.out.println(timeString);
+	//dropdown list for minutes
+	  
+	  String[] input4 = {"0","10","20","30","40","50"};
+	  String timeMinute = (String) JOptionPane.showInputDialog(null, "Choose a minute now",
+		        "The Choice of a minute", JOptionPane.QUESTION_MESSAGE, null, 
+		        input4, // Array of choices
+		        input4[0]); // Initial choice
+		    //System.out.println(timeDate);
+	  timeString = timeString + timeMinute;
+	  //setoutTime = timeString;
+	  
+	  System.out.println(timeString);
+	  return timeString;
+	  
+  }
+  
+  
   public static void main(String[] args) {
 	  /* Hannah*/
 //	  JOptionPane.showMessageDialog(frame,
@@ -214,11 +265,12 @@ public class Client {
 	  if(option==0){
 	  String userIn = JOptionPane.showInputDialog(null, "Tolerence time in minutes");
 	  waitTime = Integer.parseInt(userIn);
-	  System.out.printf("The user's name is '%s'.\n", userIn);
+	  	  
 	  } else {
 		waitTime = 0;
 	}
-	  
+	  //String timepass = SetTime();
+  
 	  //send parameter
 	  //n is the client type
   
@@ -229,7 +281,7 @@ public class Client {
       public void run() {
         try {
           // instance of this application
-          Client routingApp = new Client(option,waitTime);
+          Client routingApp = new Client(option,waitTime, SetTime());
 
           // create the UI, including the map, for the application.
           JFrame appWindow = routingApp.createWindow();
