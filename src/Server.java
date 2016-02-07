@@ -18,6 +18,7 @@ import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.tasks.na.Route;
 import com.esri.core.tasks.na.RouteParameters;
 import com.esri.core.tasks.na.RouteResult;
+import com.esri.core.tasks.na.RouteTask;
 import com.esri.map.GraphicsLayer;
 import com.esri.map.JMap;
 import com.esri.map.MapOptions;
@@ -27,12 +28,18 @@ public class Server extends Thread{
 
 	private ServerSocket socket;
 	private ObjectInputStream oin;
-	private ParamData data;
+	private ParamData data, driver;
+	private int driverTime;
+	private RouteParameters parameters;
+	private RouteResult result;
+	private RouteTask task;
   
-	public Server(int port) throws IOException {
-	      socket = new ServerSocket(port);
-	      socket.setSoTimeout(50000);
-	      data = new ParamData();
+	public Server(int port) throws IOException, Exception {
+		data = new ParamData();
+		task = RouteTask.createOnlineRouteTask("http://sampleserver6.arcgisonline.com/arcgis/rest/services/NetworkAnalysis/SanDiego/NAServer/Route", null);
+		driverTime = 0;
+		socket = new ServerSocket(port);
+	    socket.setSoTimeout(50000);
 	}
 	
 	public static void main(String [] args) {
@@ -41,6 +48,8 @@ public class Server extends Thread{
 			Thread thread = new Server(port);
 			thread.start();
 		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -54,12 +63,21 @@ public class Server extends Thread{
 				System.out.println("Client " + client.getRemoteSocketAddress() + " connected!");
 				oin = new ObjectInputStream(client.getInputStream());
 				data = (ParamData)oin.readObject();
-				//TODO: Read ParamData Object
-				//TODO: Build parameters by client type
-				//TODO: Do routing
-				//TODO: Compare time
-				//TODO: print result
-				
+				if(data.getClientType() == 0) { //Driver
+					parameters = buildDriverParams();
+				} else { //Rider
+					parameters = buildRiderParams();
+				}
+				//Do routing
+				result = task.solve(parameters);
+				//Compare time and print result
+				if(data.getClientType() == 1) {
+					int totalTime = getTotalTime(result);
+					printResult(totalTime);
+				} else {
+					driverTime = getTotalTime(result);
+					System.out.println("Driver's driving time = " + driverTime);
+				}
 				client.close();
 			} catch(SocketTimeoutException s) {
 				System.out.println("Server timed out!");
@@ -69,19 +87,40 @@ public class Server extends Thread{
 				break;
 			} catch(ClassNotFoundException ce) {
 				ce.printStackTrace();
+			} catch(Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
 	
 	private RouteParameters buildDriverParams() {
-		
+		System.out.println("Driver data received!!!");
+		System.out.println(data.getClientType());
+		System.out.println(data.getStops());
+		System.out.println(data.gettimeTolerance());
 		return null;
 	}
 	
 	private RouteParameters buildRiderParams() {
-		
+		System.out.println("Rider data received!!!");
+		System.out.println(data.getClientType());
+		System.out.println(data.getStops());
+		System.out.println(data.gettimeTolerance());
 		return null;
 	}
 	
+	private int getTotalTime(RouteResult result) {
+		String str = result.toString().split("Minutes=")[1];
+		System.out.println(str);
+		return 0;
+	}
 	
+	private void printResult(int totalTime) {
+		System.out.println("************************************************************");
+		if(totalTime - driverTime < driver.gettimeTolerance())
+			System.out.println("\tThe driver can share ride!");
+		else
+			System.out.println();
+		System.out.println("************************************************************");
+	}
 }
