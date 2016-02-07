@@ -1,13 +1,19 @@
+import com.esri.core.geometry.SpatialReference;
 
 public class ParamData {
 	private String stops;
 	private String clientType;
 	private int time_Tolerance;
-	public ParamData(String stops, String clientType, int time_Tolerance){
+	private SpatialReference sPf;
+	
+	public ParamData(){
+	}
+	
+	public ParamData(String stops, String clientType, int time_Tolerance, SpatialReference sPf){
 		this.clientType=clientType;
 		this.time_Tolerance=time_Tolerance;
 		this.stops=stops;
-		   
+		this.sPf=sPf;   
 	}
 	public String getclientType(){
 		return clientType;
@@ -17,5 +23,8 @@ public class ParamData {
 	}
 	public int gettime_Tolerance(){
 		return time_Tolerance;
+	}
+	public SpatialReference getsPf(){
+		return sPf;
 	}
 }
