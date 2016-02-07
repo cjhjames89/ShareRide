@@ -154,7 +154,6 @@ public class Client {
 	        Graphic graphic = (Graphic) myDrawingOverlay.getAndClearFeature();
 	        graphicsLayer.addGraphic(graphic);
 	        if (graphic.getAttributeValue("type").equals("Stop")) {
-	        	count++;
 	            numStops++;
 	            if(count >=2) 
 	        	  stopButton.setEnabled(false);         
@@ -165,10 +164,9 @@ public class Client {
 	          	          
 	        		graphicsLayer.addGraphic(new Graphic(graphic.getGeometry(), new TextSymbol(12, String
 	              .valueOf(numStops), Color.WHITE)));}
-	        } else if (graphic.getAttributeValue("type").equals("Barrier")) {
-	          barriers.addFeature(graphic);
-	        }
-	      }
+	        	}
+	        	count++;
+	      	}
 	    });
 
 	    return jMap;

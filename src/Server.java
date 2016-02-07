@@ -109,6 +109,7 @@ public class Server extends Thread{
 	    NAFeaturesAsFeature stops = new NAFeaturesAsFeature();
 	    for(Graphic stop : data.getStops()) {
 	    	stops.addFeature(stop);
+	    	System.out.println(stop);
 	    }
 	    parameters.setStops(stops);
 	    parameters.setFindBestSequence(false);
